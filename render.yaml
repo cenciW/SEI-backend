@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: sistema-irrigacao-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run migrate:deploy && npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sistema-irrigacao-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  - name: sistema-irrigacao-db
+    databaseName: irrigacao
+    user: irrigacao_user
+    plan: free
