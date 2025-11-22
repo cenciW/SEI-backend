@@ -17,31 +17,26 @@ Configuração completa para deploy automático no Render
 ## Como fazer o deploy no Render
 
 ### Opção 1: Deploy via render.yaml (Recomendado)
-1. Faça commit das alterações:
-   ```bash
-   git add .
-   git commit -m "Configure Render deployment"
-   git push
-   ```
-
+1. As alterações já foram commitadas e enviadas para o GitHub
 2. Acesse [render.com](https://render.com) e faça login
 3. Clique em "New" → "Blueprint"
-4. Conecte seu repositório GitHub
+4. Conecte seu repositório GitHub (SEI-backend)
 5. O Render detectará automaticamente o `render.yaml`
 6. Configure as variáveis de ambiente:
    - `OPENAI_API_KEY`: sua chave da API OpenAI
    - `DATABASE_URL`: será preenchido automaticamente pelo banco Postgres
+7. Clique em "Apply" e aguarde o deploy
 
 ### Opção 2: Deploy manual
 1. Acesse [render.com](https://render.com)
 2. Crie um novo PostgreSQL Database:
    - Database Name: `irrigacao`
    - User: `irrigacao_user`
-   - Region: escolha a mais próxima
+   - Region: escolha a mais próxima (ex: Oregon)
 
 3. Crie um novo Web Service:
-   - Conecte seu repositório
-   - **Root Directory**: `backend`
+   - Conecte seu repositório GitHub (SEI-backend)
+   - **Root Directory**: deixe vazio (o repositório já está na raiz)
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm run migrate:deploy && npm run start:prod`
    - **Environment**: Node
