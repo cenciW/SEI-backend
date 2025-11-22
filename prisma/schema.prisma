@@ -4,7 +4,6 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,15 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
 model CacheEntry {
   id        String   @id @default(uuid())
   key       String   @unique
   data      Json
   createdAt DateTime @default(now())
   expiresAt DateTime
-  
+
   @@index([key])
   @@index([expiresAt])
   @@map("cache_entries")
