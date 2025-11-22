@@ -269,32 +269,35 @@ CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
     const stage = input.stage || 'vegetative';
     const week = input.week || 1;
     const system = input.system || 'drip';
-    
+
     // Determinar a fase específica do trigo baseado em estágio e semana
     let phase = '';
     let phaseMod = 1.0;
     let phaseDesc = '';
     let criticalAdvice = '';
-    
+
     if (stage === 'vegetative') {
       if (week <= 4) {
         phase = 'tillering';
         phaseMod = 1.1;
         phaseDesc = 'PERFILHAMENTO (Tillering)';
-        criticalAdvice = 'Fase crítica: água essencial para definir número de espigas e densidade da plantação';
+        criticalAdvice =
+          'Fase crítica: água essencial para definir número de espigas e densidade da plantação';
       } else {
         phase = 'stem_elongation';
         phaseMod = 1.2;
         phaseDesc = 'ALONGAMENTO DO CAULE (Stem Elongation)';
-        criticalAdvice = 'Fase de alta demanda hídrica: crescimento vertical intenso';
+        criticalAdvice =
+          'Fase de alta demanda hídrica: crescimento vertical intenso';
       }
     } else {
       phase = 'flag_leaf';
       phaseMod = 1.4;
       phaseDesc = 'FOLHA BANDEIRA (Flag Leaf)';
-      criticalAdvice = '⚠️ FASE MAIS CRÍTICA: Evitar estresse hídrico a todo custo - impacta diretamente o rendimento';
+      criticalAdvice =
+        '⚠️ FASE MAIS CRÍTICA: Evitar estresse hídrico a todo custo - impacta diretamente o rendimento';
     }
-    
+
     // Calcular eficiência do sistema
     let efficiency = 0.95;
     let efficiencyText = '95%';
@@ -302,15 +305,15 @@ CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
       efficiency = 0.85;
       efficiencyText = '85%';
     } else if (system === 'furrow') {
-      efficiency = 0.60;
+      efficiency = 0.6;
       efficiencyText = '60%';
     }
-    
+
     // Volume base para trigo (L/m²)
     const baseVolume = 5; // 5 L/m² base
     const adjustedByPhase = baseVolume * phaseMod;
     const finalVolume = (adjustedByPhase / efficiency).toFixed(2);
-    
+
     return `Cultura: Trigo (CAMPO)
 Estágio: ${stage}, Semana ${week}
 Fase Fenológica: ${phaseDesc}
@@ -320,20 +323,32 @@ Umidade do Solo: ${input.moisture}%
 CÁLCULO DE VOLUME PARA TRIGO - SIGA EXATAMENTE:
 
 1. **Identificação da Fase Crítica**:
-   ${phase === 'tillering' ? `
+   ${
+     phase === 'tillering'
+       ? `
    ✓ PERFILHAMENTO (Semanas 1-4)
    - Multiplicador: 1.1x (10% extra)
    - Importância: Água define quantas espigas a planta produzirá
-   - Objetivo: Maximizar densidade de perfilhos` : ''}${phase === 'stem_elongation' ? `
+   - Objetivo: Maximizar densidade de perfilhos`
+       : ''
+   }${
+     phase === 'stem_elongation'
+       ? `
    ✓ ALONGAMENTO DO CAULE (Semanas 5+)
    - Multiplicador: 1.2x (20% extra)
    - Importância: Crescimento vertical acelerado
-   - Objetivo: Suportar crescimento rápido do caule` : ''}${phase === 'flag_leaf' ? `
+   - Objetivo: Suportar crescimento rápido do caule`
+       : ''
+   }${
+     phase === 'flag_leaf'
+       ? `
    ⚠️ FOLHA BANDEIRA (Floração/Reprodutivo)
    - Multiplicador: 1.4x (40% EXTRA)
    - Importância: **FASE MAIS CRÍTICA DO TRIGO**
    - Objetivo: Zero estresse - cada dia importa para rendimento final
-   - **PRIORIDADE MÁXIMA DE IRRIGAÇÃO**` : ''}
+   - **PRIORIDADE MÁXIMA DE IRRIGAÇÃO**`
+       : ''
+   }
 
 2. **Cálculo Base**:
    - Volume base para trigo: ${baseVolume} L/m²
