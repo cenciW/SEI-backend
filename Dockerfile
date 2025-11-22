@@ -15,11 +15,15 @@ COPY prisma.config.ts ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
-# Install dependencies
-RUN npm install
-
-# Copy prisma schema
+# Copy prisma schema (needs to be before npm install for Prisma 7)
 COPY prisma ./prisma
+
+# Set dummy DATABASE_URL for build time only
+ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+ENV DATABASE_URL=$DATABASE_URL
+
+# Install dependencies (will run postinstall which runs prisma generate)
+RUN npm install
 
 # Copy prolog files
 COPY prolog ./prolog
@@ -27,10 +31,7 @@ COPY prolog ./prolog
 # Copy source code
 COPY src ./src
 
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build application
+# Build application (prebuild script will run prisma generate)
 RUN npm run build
 
 # Expose port (Render will use PORT env var)
