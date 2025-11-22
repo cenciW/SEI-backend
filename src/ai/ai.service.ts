@@ -133,17 +133,104 @@ CÁLCULO PARA CAMPO:
   }
 
   private buildTomatoPrompt(input: AIRecommendationInput): string {
-    return `Cultura: Tomate
-Meta de Crescimento: ${input.goal || 'balanced'}
-EC do Solo: ${input.ec || 'não informado'}
+    const goal = input.goal || 'balanced';
+    const isPot = input.isPot;
+    const potSize = input.potSize || 10;
+    const ec = input.ec || 1.5;
+    
+    // Calcular ajustes baseados na meta de crescimento (igual ao Prolog)
+    let waterModifier = 1.0;
+    let goalDescription = '';
+    
+    if (goal === 'vegetative') {
+      waterModifier = 1.15; // 15% mais água
+      goalDescription = 'VEGETATIVO (15% mais água - prioriza folhagem)';
+    } else if (goal === 'generative') {
+      waterModifier = 0.85; // 15% menos água
+      goalDescription = 'GENERATIVO (15% menos água - prioriza frutos)';
+    } else {
+      waterModifier = 1.0;
+      goalDescription = 'BALANCEADO (equilíbrio entre folhagem e frutos)';
+    }
+    
+    // Calcular volume base
+    let baseVolume = 0;
+    if (isPot) {
+      // Para vasos: 3-5% do tamanho do vaso por dia
+      baseVolume = potSize * 0.04; // 4% como média
+    } else {
+      // Para campo: 4-6 L/m² base
+      baseVolume = 5; // L/m²
+    }
+    
+    // Ajustar pelo goal
+    const adjustedVolume = (baseVolume * waterModifier).toFixed(2);
+    
+    return `Cultura: Tomate ${isPot ? `(VASO ${potSize}L)` : '(CAMPO)'}
+Meta de Crescimento: ${goalDescription}
+EC do Solo: ${ec} (ideal: 2.0-3.5)
 Estágio: ${input.stage || 'vegetative'}
+Umidade do Solo: ${input.moisture}%
 
-Contexto Especializado:
-- Tomates podem ser direcionados para crescimento vegetativo (mais folhagem) ou generativo (mais frutos)
-- A meta de crescimento afeta a frequência de irrigação
-- Gestão de EC é crucial
+${isPot ? `
+CÁLCULO DE VOLUME PARA TOMATE EM VASO - SIGA EXATAMENTE:
 
-Forneça recomendação alinhada com a meta de crescimento (${input.goal}).`;
+1. **Volume Base Diário**:
+   - Tomate em vaso: 3-5% do tamanho do vaso/dia
+   - Vaso de ${potSize}L: base = ${baseVolume.toFixed(2)}L/dia
+
+2. **AJUSTE PELA META DE CRESCIMENTO** (CRÍTICO):
+   ${goal === 'vegetative' ? `
+   - Meta VEGETATIVA = mais água (+15%)
+   - Volume = ${baseVolume.toFixed(2)}L × 1.15 = ${adjustedVolume}L/dia
+   - Objetivo: Estimular crescimento de folhas e caules` : ''}${goal === 'generative' ? `
+   - Meta GENERATIVA = menos água (-15%)
+   - Volume = ${baseVolume.toFixed(2)}L × 0.85 = ${adjustedVolume}L/dia
+   - Objetivo: Estimular produção de frutos (stress controlado)` : ''}${goal === 'balanced' ? `
+   - Meta BALANCEADA = volume base (sem ajuste)
+   - Volume = ${baseVolume.toFixed(2)}L × 1.0 = ${adjustedVolume}L/dia
+   - Objetivo: Equilíbrio entre crescimento e produção` : ''}
+
+3. **Gestão de EC** (Condutividade Elétrica):
+   - EC atual: ${ec}
+   - EC ideal para tomate: 2.0-3.5
+   ${ec < 2.0 ? '- AÇÃO: EC baixa - aumentar concentração de nutrientes' : ''}${ec > 3.5 ? '- AÇÃO: EC alta - fazer FLUSH com água pura (2x volume normal)' : ''}
+
+**LIMITES CRÍTICOS**:
+- Volume MÍNIMO: 0.2L/dia
+- Volume MÁXIMO: ${(potSize * 0.5).toFixed(1)}L/dia (50% do vaso)
+- **USE O VALOR AJUSTADO: ${adjustedVolume}L/dia**
+` : `
+CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
+
+1. **Volume Base**:
+   - Tomate em campo: 4-6 L/m²/dia
+   - Base = ${baseVolume} L/m²
+
+2. **AJUSTE PELA META DE CRESCIMENTO** (CRÍTICO):
+   ${goal === 'vegetative' ? `
+   - Meta VEGETATIVA = mais água (+15%)
+   - Volume = ${baseVolume} × 1.15 = ${adjustedVolume} L/m²/dia
+   - Objetivo: Crescimento vigoroso de plantas` : ''}${goal === 'generative' ? `
+   - Meta GENERATIVA = menos água (-15%)
+   - Volume = ${baseVolume} × 0.85 = ${adjustedVolume} L/m²/dia
+   - Objetivo: Concentrar energia na produção de frutos` : ''}${goal === 'balanced' ? `
+   - Meta BALANCEADA = volume base
+   - Volume = ${baseVolume} × 1.0 = ${adjustedVolume} L/m²/dia
+   - Objetivo: Crescimento e produção equilibrados` : ''}
+
+3. **Gestão de EC**:
+   - EC atual: ${ec}
+   - EC ideal: 2.0-3.5
+   ${ec < 2.0 ? '- Aumentar fertilização' : ''}${ec > 3.5 ? '- Reduzir fertilização ou fazer lixiviação' : ''}
+
+**LIMITES**:
+- Mínimo: 2 L/m²/dia
+- Máximo: 10 L/m²/dia
+- **USE O VALOR AJUSTADO: ${adjustedVolume} L/m²**
+`}
+
+**IMPORTANTE**: O ajuste pela meta de crescimento (${waterModifier}x) é ESSENCIAL para tomates. Respeite rigorosamente este multiplicador.`;
   }
 
   private buildWheatPrompt(input: AIRecommendationInput): string {
