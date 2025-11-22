@@ -81,7 +81,7 @@ IMPORTANTE: Responda APENAS com o JSON, sem texto adicional.`;
   private buildCannabisPrompt(input: AIRecommendationInput): string {
     const potSize = input.potSize || 10;
     const stage = input.stage || 'vegetative';
-    
+
     // Calcular volumes baseados no estágio
     let shotPercent = 0.03; // vegetativo padrão
     let frequency = 5;
@@ -92,16 +92,18 @@ IMPORTANTE: Responda APENAS com o JSON, sem texto adicional.`;
       shotPercent = 0.06;
       frequency = 6;
     }
-    
+
     const shotSize = potSize * shotPercent;
     const dailyVolume = shotSize * frequency;
-    
+
     return `Cultura: Cannabis ${input.isPot ? `(VASO ${potSize}L)` : '(CAMPO)'}
 Estágio: ${stage}, Semana ${input.week || 1}
 EC do Solo: ${input.ec || 'não medido'}
 Umidade do Solo: ${input.moisture}%
 
-${input.isPot ? `
+${
+  input.isPot
+    ? `
 CÁLCULO DE VOLUME PARA VASO - SIGA EXATAMENTE:
 
 1. **Tamanho do Vaso**: ${potSize}L
@@ -125,11 +127,13 @@ CÁLCULO DE VOLUME PARA VASO - SIGA EXATAMENTE:
 Contexto EC:
 - Se EC > 2.6: Sugerir FLUSH (aumentar volume 1.5x)
 - Se EC < 1.2: Aumentar nutrientes (manter volume)
-` : `
+`
+    : `
 CÁLCULO PARA CAMPO:
 - Calcule em L/m² baseado na umidade do solo
 - Volume típico: 3-8 L/m²
-`}`;
+`
+}`;
   }
 
   private buildTomatoPrompt(input: AIRecommendationInput): string {
@@ -137,11 +141,11 @@ CÁLCULO PARA CAMPO:
     const isPot = input.isPot;
     const potSize = input.potSize || 10;
     const ec = input.ec || 1.5;
-    
+
     // Calcular ajustes baseados na meta de crescimento (igual ao Prolog)
     let waterModifier = 1.0;
     let goalDescription = '';
-    
+
     if (goal === 'vegetative') {
       waterModifier = 1.15; // 15% mais água
       goalDescription = 'VEGETATIVO (15% mais água - prioriza folhagem)';
@@ -152,7 +156,7 @@ CÁLCULO PARA CAMPO:
       waterModifier = 1.0;
       goalDescription = 'BALANCEADO (equilíbrio entre folhagem e frutos)';
     }
-    
+
     // Calcular volume base
     let baseVolume = 0;
     if (isPot) {
@@ -162,17 +166,19 @@ CÁLCULO PARA CAMPO:
       // Para campo: 4-6 L/m² base
       baseVolume = 5; // L/m²
     }
-    
+
     // Ajustar pelo goal
     const adjustedVolume = (baseVolume * waterModifier).toFixed(2);
-    
+
     return `Cultura: Tomate ${isPot ? `(VASO ${potSize}L)` : '(CAMPO)'}
 Meta de Crescimento: ${goalDescription}
 EC do Solo: ${ec} (ideal: 2.0-3.5)
 Estágio: ${input.stage || 'vegetative'}
 Umidade do Solo: ${input.moisture}%
 
-${isPot ? `
+${
+  isPot
+    ? `
 CÁLCULO DE VOLUME PARA TOMATE EM VASO - SIGA EXATAMENTE:
 
 1. **Volume Base Diário**:
@@ -180,16 +186,28 @@ CÁLCULO DE VOLUME PARA TOMATE EM VASO - SIGA EXATAMENTE:
    - Vaso de ${potSize}L: base = ${baseVolume.toFixed(2)}L/dia
 
 2. **AJUSTE PELA META DE CRESCIMENTO** (CRÍTICO):
-   ${goal === 'vegetative' ? `
+   ${
+     goal === 'vegetative'
+       ? `
    - Meta VEGETATIVA = mais água (+15%)
    - Volume = ${baseVolume.toFixed(2)}L × 1.15 = ${adjustedVolume}L/dia
-   - Objetivo: Estimular crescimento de folhas e caules` : ''}${goal === 'generative' ? `
+   - Objetivo: Estimular crescimento de folhas e caules`
+       : ''
+   }${
+     goal === 'generative'
+       ? `
    - Meta GENERATIVA = menos água (-15%)
    - Volume = ${baseVolume.toFixed(2)}L × 0.85 = ${adjustedVolume}L/dia
-   - Objetivo: Estimular produção de frutos (stress controlado)` : ''}${goal === 'balanced' ? `
+   - Objetivo: Estimular produção de frutos (stress controlado)`
+       : ''
+   }${
+     goal === 'balanced'
+       ? `
    - Meta BALANCEADA = volume base (sem ajuste)
    - Volume = ${baseVolume.toFixed(2)}L × 1.0 = ${adjustedVolume}L/dia
-   - Objetivo: Equilíbrio entre crescimento e produção` : ''}
+   - Objetivo: Equilíbrio entre crescimento e produção`
+       : ''
+   }
 
 3. **Gestão de EC** (Condutividade Elétrica):
    - EC atual: ${ec}
@@ -200,7 +218,8 @@ CÁLCULO DE VOLUME PARA TOMATE EM VASO - SIGA EXATAMENTE:
 - Volume MÍNIMO: 0.2L/dia
 - Volume MÁXIMO: ${(potSize * 0.5).toFixed(1)}L/dia (50% do vaso)
 - **USE O VALOR AJUSTADO: ${adjustedVolume}L/dia**
-` : `
+`
+    : `
 CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
 
 1. **Volume Base**:
@@ -208,16 +227,28 @@ CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
    - Base = ${baseVolume} L/m²
 
 2. **AJUSTE PELA META DE CRESCIMENTO** (CRÍTICO):
-   ${goal === 'vegetative' ? `
+   ${
+     goal === 'vegetative'
+       ? `
    - Meta VEGETATIVA = mais água (+15%)
    - Volume = ${baseVolume} × 1.15 = ${adjustedVolume} L/m²/dia
-   - Objetivo: Crescimento vigoroso de plantas` : ''}${goal === 'generative' ? `
+   - Objetivo: Crescimento vigoroso de plantas`
+       : ''
+   }${
+     goal === 'generative'
+       ? `
    - Meta GENERATIVA = menos água (-15%)
    - Volume = ${baseVolume} × 0.85 = ${adjustedVolume} L/m²/dia
-   - Objetivo: Concentrar energia na produção de frutos` : ''}${goal === 'balanced' ? `
+   - Objetivo: Concentrar energia na produção de frutos`
+       : ''
+   }${
+     goal === 'balanced'
+       ? `
    - Meta BALANCEADA = volume base
    - Volume = ${baseVolume} × 1.0 = ${adjustedVolume} L/m²/dia
-   - Objetivo: Crescimento e produção equilibrados` : ''}
+   - Objetivo: Crescimento e produção equilibrados`
+       : ''
+   }
 
 3. **Gestão de EC**:
    - EC atual: ${ec}
@@ -228,22 +259,109 @@ CÁLCULO PARA TOMATE EM CAMPO - SIGA EXATAMENTE:
 - Mínimo: 2 L/m²/dia
 - Máximo: 10 L/m²/dia
 - **USE O VALOR AJUSTADO: ${adjustedVolume} L/m²**
-`}
+`
+}
 
 **IMPORTANTE**: O ajuste pela meta de crescimento (${waterModifier}x) é ESSENCIAL para tomates. Respeite rigorosamente este multiplicador.`;
   }
 
   private buildWheatPrompt(input: AIRecommendationInput): string {
-    return `Cultura: Trigo
-Estágio: ${input.stage || 'vegetative'}
-Sistema de Irrigação: ${input.system || 'drip'}
+    const stage = input.stage || 'vegetative';
+    const week = input.week || 1;
+    const system = input.system || 'drip';
+    
+    // Determinar a fase específica do trigo baseado em estágio e semana
+    let phase = '';
+    let phaseMod = 1.0;
+    let phaseDesc = '';
+    let criticalAdvice = '';
+    
+    if (stage === 'vegetative') {
+      if (week <= 4) {
+        phase = 'tillering';
+        phaseMod = 1.1;
+        phaseDesc = 'PERFILHAMENTO (Tillering)';
+        criticalAdvice = 'Fase crítica: água essencial para definir número de espigas e densidade da plantação';
+      } else {
+        phase = 'stem_elongation';
+        phaseMod = 1.2;
+        phaseDesc = 'ALONGAMENTO DO CAULE (Stem Elongation)';
+        criticalAdvice = 'Fase de alta demanda hídrica: crescimento vertical intenso';
+      }
+    } else {
+      phase = 'flag_leaf';
+      phaseMod = 1.4;
+      phaseDesc = 'FOLHA BANDEIRA (Flag Leaf)';
+      criticalAdvice = '⚠️ FASE MAIS CRÍTICA: Evitar estresse hídrico a todo custo - impacta diretamente o rendimento';
+    }
+    
+    // Calcular eficiência do sistema
+    let efficiency = 0.95;
+    let efficiencyText = '95%';
+    if (system === 'pivot') {
+      efficiency = 0.85;
+      efficiencyText = '85%';
+    } else if (system === 'furrow') {
+      efficiency = 0.60;
+      efficiencyText = '60%';
+    }
+    
+    // Volume base para trigo (L/m²)
+    const baseVolume = 5; // 5 L/m² base
+    const adjustedByPhase = baseVolume * phaseMod;
+    const finalVolume = (adjustedByPhase / efficiency).toFixed(2);
+    
+    return `Cultura: Trigo (CAMPO)
+Estágio: ${stage}, Semana ${week}
+Fase Fenológica: ${phaseDesc}
+Sistema de Irrigação: ${system} (Eficiência: ${efficiencyText})
+Umidade do Solo: ${input.moisture}%
 
-Contexto Especializado:
-- Trigo tem estágios críticos (Perfilhamento, Alongamento do Caule, Folha Bandeira)
-- Eficiência do sistema varia: Gotejamento 95%, Pivô 85%, Sulco 60%
+CÁLCULO DE VOLUME PARA TRIGO - SIGA EXATAMENTE:
 
-Considere a eficiência do sistema (${input.system}) no cálculo do volume.
-Forneça volume em L/m².`;
+1. **Identificação da Fase Crítica**:
+   ${phase === 'tillering' ? `
+   ✓ PERFILHAMENTO (Semanas 1-4)
+   - Multiplicador: 1.1x (10% extra)
+   - Importância: Água define quantas espigas a planta produzirá
+   - Objetivo: Maximizar densidade de perfilhos` : ''}${phase === 'stem_elongation' ? `
+   ✓ ALONGAMENTO DO CAULE (Semanas 5+)
+   - Multiplicador: 1.2x (20% extra)
+   - Importância: Crescimento vertical acelerado
+   - Objetivo: Suportar crescimento rápido do caule` : ''}${phase === 'flag_leaf' ? `
+   ⚠️ FOLHA BANDEIRA (Floração/Reprodutivo)
+   - Multiplicador: 1.4x (40% EXTRA)
+   - Importância: **FASE MAIS CRÍTICA DO TRIGO**
+   - Objetivo: Zero estresse - cada dia importa para rendimento final
+   - **PRIORIDADE MÁXIMA DE IRRIGAÇÃO**` : ''}
+
+2. **Cálculo Base**:
+   - Volume base para trigo: ${baseVolume} L/m²
+   - Ajuste por fase: ${baseVolume} × ${phaseMod} = ${adjustedByPhase.toFixed(2)} L/m²
+
+3. **AJUSTE PELA EFICIÊNCIA DO SISTEMA**:
+   - Sistema ${system}: eficiência de ${efficiencyText}
+   - Volume compensado: ${adjustedByPhase.toFixed(2)} ÷ ${efficiency} = ${finalVolume} L/m²
+   
+   📋 Comparação de Sistemas:
+   ${system === 'drip' ? '✓' : '-'} Gotejamento (drip): 95% eficiente - menos desperdício
+   ${system === 'pivot' ? '✓' : '-'} Pivô (pivot): 85% eficiente - alguma evaporação
+   ${system === 'furrow' ? '✓' : '-'} Sulco (furrow): 60% eficiente - alto desperdício
+
+4. **RECOMENDAÇÃO FINAL**:
+   - Volume ajustado: **${finalVolume} L/m²**
+   - ${criticalAdvice}
+
+**LIMITES CRÍTICOS**:
+- Volume MÍNIMO: 3 L/m²
+- Volume MÁXIMO: 12 L/m²
+${phase === 'flag_leaf' ? '- ⚠️ Na FOLHA BANDEIRA: Priorize irrigação mesmo com chuva recente' : ''}
+
+**CONTEXTO ADICIONAL**:
+- Trigo é cultura de campo (não use cálculos de vaso)
+- Três fases críticas bem definidas
+- Sistema de irrigação afeta significativamente o volume necessário
+- **USE O VALOR AJUSTADO: ${finalVolume} L/m²**`;
   }
 
   private buildCornPrompt(input: AIRecommendationInput): string {
@@ -254,10 +372,10 @@ Forneça volume em L/m².`;
       efficiency = 0.95;
       efficiencyText = '95%';
     } else if (input.system === 'furrow') {
-      efficiency = 0.60;
+      efficiency = 0.6;
       efficiencyText = '60%';
     }
-    
+
     return `Cultura: Milho (CAMPO)
 Sistema de Irrigação: ${input.system || 'pivot'} (Eficiência: ${efficiencyText})
 Estágio: ${input.stage || 'vegetative'}
@@ -308,7 +426,9 @@ Estágio: ${input.stage || 'vegetative'}
 Forneça uma recomendação de irrigação baseada nas condições atuais.`;
   }
 
-  async getRecommendation(input: AIRecommendationInput): Promise<AIRecommendationOutput> {
+  async getRecommendation(
+    input: AIRecommendationInput,
+  ): Promise<AIRecommendationOutput> {
     try {
       const prompt = this.buildPrompt(input);
 
@@ -317,7 +437,8 @@ Forneça uma recomendação de irrigação baseada nas condições atuais.`;
         messages: [
           {
             role: 'system',
-            content: 'Você é um especialista em irrigação agrícola. Responda sempre em JSON válido.',
+            content:
+              'Você é um especialista em irrigação agrícola. Responda sempre em JSON válido.',
           },
           {
             role: 'user',
