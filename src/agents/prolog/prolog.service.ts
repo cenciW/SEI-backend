@@ -1,10 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as swipl from 'swipl-stdio';
 import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class PrologService implements OnModuleInit {
   private engine: any;
+  private isAvailable: boolean = false;
 
   onModuleInit() {
     try {
@@ -12,22 +14,33 @@ export class PrologService implements OnModuleInit {
       this.engine = new swipl.Engine();
       
       // Load the knowledge base
-      // process.cwd() is usually the project root (where package.json is), i.e., .../backend
-      // const kbPath = path.resolve(process.cwd(), '../prolog/knowledge_base.pl');
-      // backend/src/agents/prolog/prolog.service.ts
-      const kbPath = path.join(__dirname, '../../../prolog/knowledge_base.pl');
+      // Try dist path first (production), then source path (development)
+      let kbPath = path.join(__dirname, '../../../prolog/knowledge_base.pl');
+      
+      if (!fs.existsSync(kbPath)) {
+        // In development, files might be in the source directory
+        kbPath = path.join(process.cwd(), 'prolog/knowledge_base.pl');
+      }
+      
       // Escape backslashes for Prolog string
       const prologPath = kbPath.replace(/\\/g, '/');
       
       console.log(`Loading Prolog KB from: ${prologPath}`);
       this.engine.call(`consult('${prologPath}')`);
+      this.isAvailable = true;
+      console.log('✅ Prolog engine initialized successfully');
       
     } catch (error) {
-      console.error('Failed to initialize Prolog engine:', error);
+      console.warn('⚠️ Prolog engine not available. Prolog features will be disabled.');
+      console.warn('To enable Prolog: Install SWI-Prolog from https://www.swi-prolog.org/download/stable');
+      this.isAvailable = false;
     }
   }
 
   async query(goal: string): Promise<any> {
+    if (!this.isAvailable) {
+      throw new Error('Prolog engine is not available. Please install SWI-Prolog.');
+    }
     try {
       const query = await this.engine.call(goal);
       return query; 
@@ -38,6 +51,9 @@ export class PrologService implements OnModuleInit {
   }
 
   async assertFact(fact: string): Promise<void> {
+    if (!this.isAvailable) {
+      throw new Error('Prolog engine is not available. Please install SWI-Prolog.');
+    }
     try {
       await this.engine.call(`assertz(${fact})`);
     } catch (error) {
@@ -47,10 +63,17 @@ export class PrologService implements OnModuleInit {
   }
   
   async getRecommendation(crop: string, location: string): Promise<any> {
-      // irrigation_decision(Crop, Location, decision(Need, Score, VolumeL, Advice))
-      // Quote atoms to handle uppercase inputs
-      const goal = `irrigation_decision('${crop}', '${location}', decision(Need, Score, VolumeL, Advice))`;
-      const result = await this.engine.call(goal);
-      return result;
+    if (!this.isAvailable) {
+      throw new Error('Prolog engine is not available. Please install SWI-Prolog.');
+    }
+    // irrigation_decision(Crop, Location, decision(Need, Score, VolumeL, Advice))
+    // Quote atoms to handle uppercase inputs
+    const goal = `irrigation_decision('${crop}', '${location}', decision(Need, Score, VolumeL, Advice))`;
+    const result = await this.engine.call(goal);
+    return result;
+  }
+
+  isPrologAvailable(): boolean {
+    return this.isAvailable;
   }
 }

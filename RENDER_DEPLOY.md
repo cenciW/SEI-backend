@@ -40,16 +40,12 @@
    - **Region**: mesma região do banco (**Oregon**)
    - **Branch**: `master`
    - **Root Directory**: **deixe VAZIO** (não preencha nada)
-   - **Runtime**: **Node**
-   - **Build Command**: 
-     ```
-     apt-get update && apt-get install -y swi-prolog && npm install && npm run build
-     ```
-   - **Start Command**: 
-     ```
-     npm run migrate:deploy && npm run start:prod
-     ```
+   - **Runtime**: **Docker** ⚠️ (IMPORTANTE: selecione Docker, não Node)
+   - **Dockerfile Path**: `Dockerfile` (ou deixe o padrão)
+   - **Docker Context**: `.` (ou deixe o padrão)
    - **Plan**: **Free**
+
+   ℹ️ **Nota**: O Dockerfile já contém os comandos de build e start, não precisa configurá-los manualmente.
 
 ### PASSO 3: Configurar variáveis de ambiente
 Ainda na configuração do Web Service, role até **"Environment Variables"**:
