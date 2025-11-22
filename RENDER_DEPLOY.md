@@ -11,40 +11,77 @@
 - ✅ Porta dinâmica: agora usa `process.env.PORT` (obrigatório no Render)
 - ✅ Remove porta fixa 3001, mantém como fallback apenas
 
-### 3. Arquivo render.yaml criado
-Configuração completa para deploy automático no Render
+### 3. Dependências
+- ✅ `dotenv` instalado (necessário para Prisma 7)
 
-## Como fazer o deploy no Render
+## Como fazer o deploy no Render (PASSO A PASSO)
 
-### Opção 1: Deploy via render.yaml (Recomendado)
-1. As alterações já foram commitadas e enviadas para o GitHub
-2. Acesse [render.com](https://render.com) e faça login
-3. Clique em "New" → "Blueprint"
-4. Conecte seu repositório GitHub (SEI-backend)
-5. O Render detectará automaticamente o `render.yaml`
-6. Configure as variáveis de ambiente:
-   - `OPENAI_API_KEY`: sua chave da API OpenAI
-   - `DATABASE_URL`: será preenchido automaticamente pelo banco Postgres
-7. Clique em "Apply" e aguarde o deploy
+### PASSO 1: Criar banco de dados PostgreSQL
+1. Acesse [render.com](https://render.com) e faça login
+2. No dashboard, clique em **"New +"** → **"PostgreSQL"**
+3. Configure o banco:
+   - **Name**: `sistema-irrigacao-db` (ou qualquer nome)
+   - **Database**: `irrigacao`
+   - **User**: `irrigacao_user` (ou deixe o padrão)
+   - **Region**: escolha a mais próxima (ex: **Oregon (US West)**)
+   - **Plan**: **Free**
+4. Clique em **"Create Database"**
+5. ⚠️ **IMPORTANTE**: Copie a **"Internal Database URL"** (começará com `postgresql://...`)
 
-### Opção 2: Deploy manual
-1. Acesse [render.com](https://render.com)
-2. Crie um novo PostgreSQL Database:
-   - Database Name: `irrigacao`
-   - User: `irrigacao_user`
-   - Region: escolha a mais próxima (ex: Oregon)
+### PASSO 2: Criar Web Service
+1. No dashboard do Render, clique em **"New +"** → **"Web Service"**
+2. Conecte seu repositório GitHub:
+   - Se for a primeira vez, clique em **"Connect GitHub"** e autorize o Render
+   - Procure por **"SEI-backend"** ou **"cenciW/SEI-backend"**
+   - Clique em **"Connect"**
 
-3. Crie um novo Web Service:
-   - Conecte seu repositório GitHub (SEI-backend)
-   - **Root Directory**: deixe vazio (o repositório já está na raiz)
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm run migrate:deploy && npm run start:prod`
-   - **Environment**: Node
+3. Configure o serviço:
+   - **Name**: `sistema-irrigacao-backend` (ou qualquer nome)
+   - **Region**: mesma região do banco (**Oregon**)
+   - **Branch**: `master`
+   - **Root Directory**: **deixe VAZIO** (não preencha nada)
+   - **Runtime**: **Node**
+   - **Build Command**: 
+     ```
+     npm install && npm run build
+     ```
+   - **Start Command**: 
+     ```
+     npm run migrate:deploy && npm run start:prod
+     ```
+   - **Plan**: **Free**
 
-4. Configure as variáveis de ambiente:
-   - `DATABASE_URL`: copie do banco Postgres criado (Internal Database URL)
-   - `OPENAI_API_KEY`: sua chave da API OpenAI
-   - `NODE_VERSION`: `20.x`
+### PASSO 3: Configurar variáveis de ambiente
+Ainda na configuração do Web Service, role até **"Environment Variables"**:
+
+1. Adicione `DATABASE_URL`:
+   - **Key**: `DATABASE_URL`
+   - **Value**: Cole a **Internal Database URL** que você copiou do banco PostgreSQL
+   - Exemplo: `postgresql://irrigacao_user:senha@dpg-xxxxx.oregon-postgres.render.com/irrigacao`
+
+2. Adicione `OPENAI_API_KEY`:
+   - **Key**: `OPENAI_API_KEY`
+   - **Value**: sua chave da API OpenAI (começa com `sk-...`)
+
+3. Adicione `NODE_VERSION` (opcional mas recomendado):
+   - **Key**: `NODE_VERSION`
+   - **Value**: `20.x`
+
+### PASSO 4: Deploy
+1. Clique em **"Create Web Service"**
+2. O Render começará o deploy automaticamente
+3. Acompanhe os logs - o processo deve:
+   - Instalar dependências
+   - Executar `prisma generate`
+   - Fazer build do NestJS
+   - Executar migrações do banco
+   - Iniciar o servidor
+
+### PASSO 5: Testar
+Quando o deploy terminar com sucesso:
+- A URL do seu serviço aparecerá no topo (ex: `https://sistema-irrigacao-backend.onrender.com`)
+- Teste acessando a URL no navegador
+- Você deve ver a resposta da API
 
 ## Verificação
 
