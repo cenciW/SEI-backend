@@ -43,7 +43,7 @@
    - **Runtime**: **Node**
    - **Build Command**: 
      ```
-     npm install && npm run build
+     apt-get update && apt-get install -y swi-prolog && npm install && npm run build
      ```
    - **Start Command**: 
      ```
