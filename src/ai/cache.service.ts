@@ -85,7 +85,7 @@ export class CacheService {
       const now = new Date();
       let expired = 0;
 
-      for (const [_, entry] of this.cache) {
+      for (const [, entry] of this.cache) {
         if (now > entry.expiresAt) {
           expired++;
         }
