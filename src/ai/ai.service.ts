@@ -426,24 +426,26 @@ Forneça volume em L/m² (litros por metro quadrado).`;
     const humidity = input.humidity;
     const isPot = input.isPot;
     const potSize = input.potSize || 5; // Alface geralmente em vasos menores
-    
+
     // Calcular VPD (Vapor Pressure Deficit)
     const SVP = 0.6108 * Math.exp((17.27 * temp) / (temp + 237.3)); // Saturated Vapor Pressure (kPa)
     const VPD = SVP * (1 - humidity / 100.0); // VPD em kPa
-    
+
     // Determinar nível de risco baseado no VPD
     let vpdLevel = '';
     let vpdMod = 1.0;
     let vpdAdvice = '';
-    
+
     if (VPD > 1.5) {
       vpdLevel = '⚠️ ALTO (> 1.5 kPa)';
       vpdMod = 1.3;
-      vpdAdvice = 'ALERTA: VPD alto causa transpiração excessiva - IRRIGAR PREVENTIVAMENTE mesmo se solo úmido';
+      vpdAdvice =
+        'ALERTA: VPD alto causa transpiração excessiva - IRRIGAR PREVENTIVAMENTE mesmo se solo úmido';
     } else if (VPD > 1.0) {
       vpdLevel = '⚡ MODERADO-ALTO (1.0-1.5 kPa)';
       vpdMod = 1.15;
-      vpdAdvice = 'VPD moderado-alto: Monitorar murcha, aumentar frequência de irrigação';
+      vpdAdvice =
+        'VPD moderado-alto: Monitorar murcha, aumentar frequência de irrigação';
     } else if (VPD > 0.4) {
       vpdLevel = '✓ IDEAL (0.4-1.0 kPa)';
       vpdMod = 1.0;
@@ -451,9 +453,10 @@ Forneça volume em L/m² (litros por metro quadrado).`;
     } else {
       vpdLevel = '⬇️ BAIXO (< 0.4 kPa)';
       vpdMod = 0.9;
-      vpdAdvice = 'VPD baixo: Risco de doenças fúngicas, reduzir irrigação e melhorar ventilação';
+      vpdAdvice =
+        'VPD baixo: Risco de doenças fúngicas, reduzir irrigação e melhorar ventilação';
     }
-    
+
     // Volume base para alface
     let baseVolume = 0;
     if (isPot) {
@@ -463,9 +466,9 @@ Forneça volume em L/m² (litros por metro quadrado).`;
       // Alface em campo: 3-5 L/m²
       baseVolume = 4; // L/m²
     }
-    
+
     const adjustedVolume = (baseVolume * vpdMod).toFixed(2);
-    
+
     return `Cultura: Alface ${isPot ? `(VASO ${potSize}L)` : '(CAMPO)'}
 Temperatura do Ar: ${temp}°C
 Umidade Relativa: ${humidity}%
@@ -488,7 +491,9 @@ CÁLCULO DE VPD (Déficit de Pressão de Vapor) - FUNDAMENTAL PARA ALFACE:
    - 1.0-1.5 kPa: Moderado-alto (aumentar água)
    - > 1.5 kPa: ⚠️ CRÍTICO (irrigação preventiva)
 
-${isPot ? `
+${
+  isPot
+    ? `
 3. **CÁLCULO DE VOLUME PARA ALFACE EM VASO**:
    - Volume base: 4-6% do vaso/dia
    - Vaso de ${potSize}L: base = ${baseVolume.toFixed(2)}L/dia
@@ -498,7 +503,8 @@ ${isPot ? `
    - Mínimo: 0.1L/dia
    - Máximo: ${(potSize * 0.5).toFixed(1)}L/dia
    - **USE O VALOR AJUSTADO: ${adjustedVolume}L/dia**
-` : `
+`
+    : `
 3. **CÁLCULO DE VOLUME PARA ALFACE EM CAMPO**:
    - Volume base: 3-5 L/m²/dia
    - Base = ${baseVolume} L/m²
@@ -508,7 +514,8 @@ ${isPot ? `
    - Mínimo: 2 L/m²/dia
    - Máximo: 8 L/m²/dia
    - **USE O VALOR AJUSTADO: ${adjustedVolume} L/m²**
-`}
+`
+}
 
 **IMPORTANTE**: 
 - Alface é EXTREMAMENTE sensível ao VPD

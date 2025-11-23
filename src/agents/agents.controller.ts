@@ -13,9 +13,11 @@ export class AgentsController {
   ) {}
 
   @Post('sensor')
-  async updateSensor(@Body() body: { location: string; type: string; value: number }) {
+  async updateSensor(
+    @Body() body: { location: string; type: string; value: number },
+  ) {
     // sensor(Type, Location, Value)
-    
+
     // Retract previous sensor reading for this type/location to avoid stale data
     const retract = `retractall(sensor('${body.type}', '${body.location}', _))`;
     await this.prologService.query(retract);
@@ -28,7 +30,9 @@ export class AgentsController {
   }
 
   @Post('context')
-  async updateContext(@Body() body: { location: string; mode: 'field' | 'pot'; size?: number }) {
+  async updateContext(
+    @Body() body: { location: string; mode: 'field' | 'pot'; size?: number },
+  ) {
     // planting_mode(Location, Mode, Size)
     // Retract previous mode for this location first (to avoid duplicates)
     const retract = `retractall(planting_mode('${body.location}', _, _))`;
@@ -42,7 +46,14 @@ export class AgentsController {
   }
 
   @Post('stage')
-  async updateStage(@Body() body: { location: string; stage: 'vegetative' | 'blooming' | 'seedling'; week: number }) {
+  async updateStage(
+    @Body()
+    body: {
+      location: string;
+      stage: 'vegetative' | 'blooming' | 'seedling';
+      week: number;
+    },
+  ) {
     // plant_stage(Location, Stage, Week)
     const retract = `retractall(plant_stage('${body.location}', _, _))`;
     await this.prologService.query(retract);
@@ -54,36 +65,47 @@ export class AgentsController {
   }
 
   @Post('advanced')
-  async updateAdvanced(@Body() body: { location: string; ec?: number; system?: string; goal?: string }) {
+  async updateAdvanced(
+    @Body()
+    body: {
+      location: string;
+      ec?: number;
+      system?: string;
+      goal?: string;
+    },
+  ) {
     // sensor(ec, Location, Value)
     if (body.ec !== undefined) {
-        const retract = `retractall(sensor(ec, '${body.location}', _))`;
-        await this.prologService.query(retract);
-        const fact = `sensor(ec, '${body.location}', ${body.ec})`;
-        await this.prologService.assertFact(fact);
+      const retract = `retractall(sensor(ec, '${body.location}', _))`;
+      await this.prologService.query(retract);
+      const fact = `sensor(ec, '${body.location}', ${body.ec})`;
+      await this.prologService.assertFact(fact);
     }
 
     // system_type(Location, Type)
     if (body.system) {
-        const retract = `retractall(system_type('${body.location}', _))`;
-        await this.prologService.query(retract);
-        const fact = `system_type('${body.location}', ${body.system})`;
-        await this.prologService.assertFact(fact);
+      const retract = `retractall(system_type('${body.location}', _))`;
+      await this.prologService.query(retract);
+      const fact = `system_type('${body.location}', ${body.system})`;
+      await this.prologService.assertFact(fact);
     }
 
     // growth_goal(Location, Goal)
     if (body.goal) {
-        const retract = `retractall(growth_goal('${body.location}', _))`;
-        await this.prologService.query(retract);
-        const fact = `growth_goal('${body.location}', ${body.goal})`;
-        await this.prologService.assertFact(fact);
+      const retract = `retractall(growth_goal('${body.location}', _))`;
+      await this.prologService.query(retract);
+      const fact = `growth_goal('${body.location}', ${body.goal})`;
+      await this.prologService.assertFact(fact);
     }
 
     return { status: 'success' };
   }
 
   @Get('recommendation')
-  async getRecommendation(@Query('crop') crop: string, @Query('location') location: string) {
+  async getRecommendation(
+    @Query('crop') crop: string,
+    @Query('location') location: string,
+  ) {
     const result = await this.prologService.getRecommendation(crop, location);
     return result;
   }

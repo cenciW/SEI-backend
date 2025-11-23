@@ -6,6 +6,6 @@ import { AIModule } from '../ai/ai.module';
 @Module({
   imports: [AIModule],
   providers: [PrologService],
-  controllers: [AgentsController]
+  controllers: [AgentsController],
 })
 export class AgentsModule {}

@@ -31,7 +31,7 @@ export class PrologService implements OnModuleInit {
       console.log('✅ Prolog engine initialized successfully');
     } catch (error) {
       console.warn(
-        '⚠️ Prolog engine not available. Prolog features will be disabled.',
+        `Prolog engine not available: ${error}. Prolog features will be disabled.`,
       );
       console.warn(
         'To enable Prolog: Install SWI-Prolog from https://www.swi-prolog.org/download/stable',

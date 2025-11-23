@@ -13,8 +13,8 @@ export class CacheService {
 
   constructor() {
     // Get TTL from environment or use default (1 hour)
-    this.defaultTTL = (parseInt(process.env.AI_CACHE_TTL || '3600')) * 1000;
-    
+    this.defaultTTL = parseInt(process.env.AI_CACHE_TTL || '3600') * 1000;
+
     // Clean expired entries every 5 minutes
     setInterval(() => this.cleanExpired(), 5 * 60 * 1000);
   }
@@ -52,7 +52,9 @@ export class CacheService {
 
   async set<T>(key: string, data: T, ttl?: number): Promise<void> {
     try {
-      const expiresAt = new Date(Date.now() + (ttl ? ttl * 1000 : this.defaultTTL));
+      const expiresAt = new Date(
+        Date.now() + (ttl ? ttl * 1000 : this.defaultTTL),
+      );
 
       this.cache.set(key, {
         data,
