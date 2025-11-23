@@ -10,6 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model CacheEntry {
@@ -22,4 +23,22 @@ model CacheEntry {
   @@index([key])
   @@index([expiresAt])
   @@map("cache_entries")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
 }

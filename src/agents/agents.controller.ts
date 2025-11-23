@@ -1,4 +1,8 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Param } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
 import { PrologService } from './prolog/prolog.service';
 import { AIService } from '../ai/ai.service';
 import { CacheService } from '../ai/cache.service';
@@ -13,6 +17,8 @@ export class AgentsController {
   ) {}
 
   @Post('sensor')
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
   async updateSensor(
     @Body() body: { location: string; type: string; value: number },
   ) {
@@ -156,5 +162,48 @@ export class AgentsController {
   async getCacheStats() {
     const stats = await this.cacheService.getStats();
     return stats;
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('prolog/rules')
+  async getPrologRules() {
+    const rules = await this.prologService.getRules();
+    return { rules };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('prolog/rules')
+  async updatePrologRules(@Body() body: { rules: string }) {
+    await this.prologService.updateRules(body.rules);
+    return { status: 'success', message: 'Rules updated successfully' };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('prolog/modules')
+  async listPrologModules() {
+    const modules = await this.prologService.listModules();
+    return { modules };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('prolog/modules/:modulePath(*)')
+  async getModuleContent(@Param('modulePath') modulePath: string) {
+    const content = await this.prologService.getModuleContent(modulePath);
+    return { content };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('prolog/modules/:modulePath(*)')
+  async updateModuleContent(
+    @Param('modulePath') modulePath: string,
+    @Body() body: { content: string },
+  ) {
+    await this.prologService.updateModuleContent(modulePath, body.content);
+    return { status: 'success', message: 'Module updated successfully' };
   }
 }

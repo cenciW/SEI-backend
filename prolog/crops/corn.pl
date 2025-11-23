@@ -1,4 +1,4 @@
-% corn.pl
+% corn.pl t
 :- encoding(utf8).
 % Lógica específica para Milho (System Type)
 

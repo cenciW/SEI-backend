@@ -1,4 +1,4 @@
-% Cannabis-specific irrigation rules
+% Cannabis-specific irrigation rules apenas um teste.
 
 :- discontiguous cannabis_target_ec/4.
 :- discontiguous cannabis_target_input_ec/4.
