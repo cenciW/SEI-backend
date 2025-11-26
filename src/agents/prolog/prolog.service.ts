@@ -125,7 +125,6 @@ export class PrologService implements OnModuleInit {
       // 4. Reload the main file to be sure
       const kbPathEscaped = kbPath.replace(/\\/g, '/');
       await this.engine.call(`consult('${kbPathEscaped}')`);
-      
       console.log('✅ Prolog rules updated and reloaded successfully');
     } catch (error) {
       console.error('❌ Failed to update Prolog rules:', error);
@@ -142,16 +141,17 @@ export class PrologService implements OnModuleInit {
   async listModules(): Promise<string[]> {
     const prologDir = path.join(process.cwd(), 'prolog');
     const cropsDir = path.join(prologDir, 'crops');
-    
+
     const modules = ['knowledge_base.pl'];
-    
+
     if (fs.existsSync(cropsDir)) {
-      const cropFiles = fs.readdirSync(cropsDir)
-        .filter(file => file.endsWith('.pl'))
-        .map(file => `crops/${file}`);
+      const cropFiles = fs
+        .readdirSync(cropsDir)
+        .filter((file) => file.endsWith('.pl'))
+        .map((file) => `crops/${file}`);
       modules.push(...cropFiles);
     }
-    
+
     return modules;
   }
 
@@ -160,16 +160,19 @@ export class PrologService implements OnModuleInit {
     // Sanitize path to prevent directory traversal
     const safePath = modulePath.replace(/\.\./g, '');
     const fullPath = path.join(process.cwd(), 'prolog', safePath);
-    
+
     if (!fs.existsSync(fullPath)) {
       throw new Error(`Module not found: ${modulePath}`);
     }
-    
+
     return fs.readFileSync(fullPath, 'utf-8');
   }
 
   // Update content of a specific module
-  async updateModuleContent(modulePath: string, newContent: string): Promise<void> {
+  async updateModuleContent(
+    modulePath: string,
+    newContent: string,
+  ): Promise<void> {
     if (!this.isAvailable) {
       throw new Error('Prolog engine is not available');
     }
@@ -177,13 +180,17 @@ export class PrologService implements OnModuleInit {
     // Sanitize path
     const safePath = modulePath.replace(/\.\./g, '');
     const fullPath = path.join(process.cwd(), 'prolog', safePath);
-    
+
     if (!fs.existsSync(fullPath)) {
       throw new Error(`Module not found: ${modulePath}`);
     }
 
     // Create temp file
-    const tempPath = path.join(process.cwd(), 'prolog', `temp_${safePath.replace(/\//g, '_')}`);
+    const tempPath = path.join(
+      process.cwd(),
+      'prolog',
+      `temp_${safePath.replace(/\//g, '_')}`,
+    );
     fs.writeFileSync(tempPath, newContent);
 
     try {
@@ -197,7 +204,7 @@ export class PrologService implements OnModuleInit {
       // Reload entire knowledge base to ensure consistency
       const kbPath = path.join(process.cwd(), 'prolog/knowledge_base.pl');
       const kbPathEscaped = kbPath.replace(/\\/g, '/');
-      
+
       // Use make/0 to reload all modified files if available, otherwise reconsult
       try {
         await this.engine.call('make');
@@ -205,7 +212,7 @@ export class PrologService implements OnModuleInit {
         // If make/0 not available, just reconsult the knowledge base
         await this.engine.call(`consult('${kbPathEscaped}')`);
       }
-      
+
       console.log(`✅ Module ${modulePath} updated successfully`);
     } catch (error) {
       console.error(`❌ Failed to update module ${modulePath}:`, error);

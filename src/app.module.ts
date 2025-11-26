@@ -12,7 +12,7 @@ import { AuthModule } from './auth/auth.module';
       envFilePath: '.env',
     }),
     AgentsModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
