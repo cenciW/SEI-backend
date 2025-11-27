@@ -1,10 +1,14 @@
-FROM node:20-slim
+FROM node:20
 
-# Install SWI-Prolog
-RUN apt-get update && \
-    apt-get install -y swi-prolog && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install system dependencies + SWI-Prolog
+RUN apt-get update && apt-get install -y \
+    swi-prolog \
+    ca-certificates \
+    libgmp-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Force swipl into PATH (safety)
+RUN ln -s /usr/bin/swipl /bin/swipl || true
 
 # Set working directory
 WORKDIR /app
@@ -15,28 +19,28 @@ COPY prisma.config.ts ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
-# Copy prisma schema (needs to be before npm install for Prisma 7)
+# Copy prisma schema
 COPY prisma ./prisma
 
-# Set dummy DATABASE_URL for build time only
+# Dummy DB URL for build time (only for prisma generate, not actual connection)
 ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 ENV DATABASE_URL=$DATABASE_URL
 
-# Install dependencies (will run postinstall which runs prisma generate)
+# Install dependencies
 RUN npm install
 
 # Copy prolog files
 COPY prolog ./prolog
 
-# Copy source code
+# Copy source
 COPY src ./src
 
-# Build application (prebuild script will run prisma generate)
+# Build application
 RUN npm run build
 
-# Expose port (Render will use PORT env var)
+# Expose port
 ENV PORT=3001
 EXPOSE 3001
 
-# Start command
+# Start
 CMD ["sh", "-c", "npm run migrate:deploy && npm run start:prod"]
