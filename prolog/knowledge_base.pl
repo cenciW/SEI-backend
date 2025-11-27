@@ -14,8 +14,6 @@
 :- consult('crops/tomato.pl').
 :- consult('crops/corn.pl').
 
-% ... (Keep existing static knowledge and helper predicates like moisture_deficit, rainfall_factor, etc.) ...
-
 % =========================================================
 % ===========     CONHECIMENTO ESTÁTICO REAL      =========
 % =========================================================

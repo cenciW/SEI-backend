@@ -107,24 +107,21 @@ export class PrologService implements OnModuleInit {
     fs.writeFileSync(tempPath, newContent);
 
     try {
-      // 2. Try to consult the temp file
-      // We use a new engine instance or just try to consult it in the current one?
-      // If we consult in current one and it fails, it might leave it in bad state?
-      // swipl-stdio engine is persistent.
-      // Let's try to consult. If it throws, it's invalid.
+      // 2. Validate temp file with RECONSULT (sem duplicação)
       const tempPathEscaped = tempPath.replace(/\\/g, '/');
-      await this.engine.call(`consult('${tempPathEscaped}')`);
+      await this.engine.call(`reconsult('${tempPathEscaped}')`);
 
-      // 3. If success, overwrite the actual file
+      // 3. Overwrite the real KB
       let kbPath = path.join(__dirname, '../../../prolog/knowledge_base.pl');
       if (!fs.existsSync(kbPath)) {
         kbPath = path.join(process.cwd(), 'prolog/knowledge_base.pl');
       }
       fs.writeFileSync(kbPath, newContent);
 
-      // 4. Reload the main file to be sure
+      // 4. Reload the real KB safely
       const kbPathEscaped = kbPath.replace(/\\/g, '/');
-      await this.engine.call(`consult('${kbPathEscaped}')`);
+      await this.engine.call(`reconsult('${kbPathEscaped}')`);
+
       console.log('✅ Prolog rules updated and reloaded successfully');
     } catch (error) {
       console.error('❌ Failed to update Prolog rules:', error);
